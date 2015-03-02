@@ -15,6 +15,7 @@ from pritunl import mongo
 from pritunl import event
 from pritunl import messenger
 from pritunl import organization
+from pritunl import ipaddress
 
 import os
 import signal
@@ -121,6 +122,11 @@ class ServerInstance(object):
         push = ''
         if self.server.mode == LOCAL_TRAFFIC:
             for network in self.server.local_networks:
+                net = ipaddress.IPNetwork(network)
+                for x in self.server.hosts:
+                  if ipaddress.IPAddress(host.get_by_id(x).public_addr) in net:
+                      push += 'push "route %s 255.255.255.255 net_gateway"\n' %\
+                              host.get_by_id(x).public_addr
                 push += 'push "route %s %s"\n' % utils.parse_network(network)
         elif self.server.mode == VPN_TRAFFIC:
             pass
